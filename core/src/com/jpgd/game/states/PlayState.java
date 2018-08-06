@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -17,19 +19,22 @@ import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.utils.Align;
 import com.jpgd.game.BasicGameSuite;
 import com.jpgd.game.card_games.card_basics.Card;
 import com.jpgd.game.card_games.rule_sets.CardGames;
 import com.jpgd.game.card_games.rule_sets.HigherOrLower;
 import com.jpgd.game.card_games.rule_sets.RuleSet;
+import com.jpgd.game.utils.scene2d.ui.DepthGroup;
 
 public class PlayState extends State {
 
-    private HigherOrLower gameSelection;
+    private HigherOrLower higherOrLower;
     //private RuleSet gameSelection;
 
     private TextureAtlas atlas;
@@ -38,21 +43,32 @@ public class PlayState extends State {
 
     VerticalGroup verticalGroup;
     HorizontalGroup horizontalGroup;
-    private Table buttonTable;
+    private Table cardTable, buttonTable;
+    Stack discardImgStack;
+    Group testGroup;
+    WidgetGroup widgetGroup;
+    DepthGroup depthGroup;
 
-    public PlayState(final BasicGameSuite basicGameSuite, final HigherOrLower gameSelection) {
-    //public PlayState(BasicGameSuite basicGameSuite, RuleSet gameSelection) {
+    public PlayState(final BasicGameSuite basicGameSuite, final HigherOrLower higherOrLower) {
+    //public PlayState(BasicGameSuite basicGameSuite, RuleSet higherOrLower) {
         super(basicGameSuite);
 
         verticalGroup = new VerticalGroup();
         horizontalGroup = new HorizontalGroup();
+        cardTable = new Table();
         buttonTable = new Table();
+        discardImgStack = new Stack();
+        testGroup = new Group();
+        widgetGroup = new WidgetGroup();
+        depthGroup = new DepthGroup();
+        //depthGroup.setDebug(true);
+        //discardImgStack.setFillParent(true);
 
         score = 0;
-        this.gameSelection = gameSelection;
+        this.higherOrLower = higherOrLower;
         Gdx.input.setInputProcessor(this.getStage());
 
-        this.getLabel().setText("What will the next card be?\nCards left: " + (gameSelection.getDeckManager().getDeck().size()) +  "   Score: " + score);
+        this.getLabel().setText("What will the next card be?\nCards left: " + (higherOrLower.getDeckManager().getDeck().size()) +  "   Score: " + score);
         // setting the size of the label, not the text font
         //this.getLabel().setSize(this.getBasicGameSuite().WIDTH, this.getBasicGameSuite().HEIGHT/4);
         // Setting the scale of the font text itself
@@ -62,7 +78,7 @@ public class PlayState extends State {
 
         //this.getStage().addActor(this.getLabel());
 
-        gameSelection.dealCardsToPlayers();
+        higherOrLower.dealCardsToPlayers();
 
         // initialize the "higher" button and set position
         higherButton = new TextButton("Higher?", this.getSkin());
@@ -74,9 +90,9 @@ public class PlayState extends State {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 System.out.println("Higher Button pushed");
-                if(gameSelection.getDeckManager().getDeck().size() > 1) {
-                    gameSelection.dealCardsToPlayers();
-                    if (gameSelection.compareCards("higher") == true) {
+                if(higherOrLower.getDeckManager().getDeck().size() > 1) {
+                    higherOrLower.dealCardsToPlayers();
+                    if (higherOrLower.compareCards("higher") == true) {
                         score++;
                     }
                     buildTableLayout();
@@ -102,9 +118,9 @@ public class PlayState extends State {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 System.out.println("Equal Button pushed");
-                if(gameSelection.getDeckManager().getDeck().size() > 1) {
-                    gameSelection.dealCardsToPlayers();
-                    if (gameSelection.compareCards("equal") == true) {
+                if(higherOrLower.getDeckManager().getDeck().size() > 1) {
+                    higherOrLower.dealCardsToPlayers();
+                    if (higherOrLower.compareCards("equal") == true) {
                         score++;
                     }
                     buildTableLayout();
@@ -129,9 +145,9 @@ public class PlayState extends State {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 System.out.println("Lower Button pushed");
-                if(gameSelection.getDeckManager().getDeck().size() > 1) {
-                    gameSelection.dealCardsToPlayers();
-                    if (gameSelection.compareCards("lower") == true) {
+                if(higherOrLower.getDeckManager().getDeck().size() > 1) {
+                    higherOrLower.dealCardsToPlayers();
+                    if (higherOrLower.compareCards("lower") == true) {
                         score++;
                     }
                     buildTableLayout();
@@ -146,34 +162,11 @@ public class PlayState extends State {
                 return true;
             }
         });
-        //this.getStage().addActor(lowerButton);
 
-        /*
-        // Update the table for layout
-        getTableLayout().setFillParent(true);
-
-        getTableLayout().setDebug(true);
-        //getTableLayout().align(Align.center);
-        getTableLayout().add(this.getLabel());
-        getTableLayout().row();
-
-        getTableLayout().add(gameSelection.getCurrentCard().getFaceImg()).width(gameSelection.getCurrentCard().getFaceImg().getWidth()*1.5f).height(gameSelection.getCurrentCard().getFaceImg().getHeight()*1.5f).pad(10);
-        getTableLayout().row();
-
-
-        tableB.add(higherButton).width(higherButton.getWidth()).height(higherButton.getHeight()).pad(10,20,10,20);
-        tableB.add(equalButton).width(equalButton.getWidth()).height(equalButton.getHeight()).pad(10,20,10,20);
-        tableB.add(lowerButton).width(lowerButton.getWidth()).height(lowerButton.getHeight()).pad(10,20,10,20);
-
-
-
-
-        getTableLayout().add(tableB);
-
-        */
 
         getTableLayout().setFillParent(true);
         //getTableLayout().setDebug(true);
+        //testGroup.setDebug(true);
         buildTableLayout();
 
         this.getStage().addActor(this.getTableLayout());
@@ -183,22 +176,68 @@ public class PlayState extends State {
 
     public void buildTableLayout() {
         getTableLayout().clearChildren();
+        verticalGroup.clearChildren();
+        cardTable.clearChildren();
+        //cardTable.setDebug(true);
         buttonTable.clearChildren();
-        //getTableLayout().setFillParent(true);
-
-        //getTableLayout().align(Align.center);
-        getTableLayout().add(this.getLabel());
-        getTableLayout().row();
-
-        getTableLayout().add(gameSelection.getCurrentCard().getFaceImg()).width(gameSelection.getCurrentCard().getFaceImg().getWidth()*1.5f).height(gameSelection.getCurrentCard().getFaceImg().getHeight()*1.5f).pad(10);
-        getTableLayout().row();
+        discardImgStack.clearChildren();
+        testGroup.clearChildren();
+        widgetGroup.clearChildren();
+        depthGroup.clearChildren();
 
 
-        buttonTable.add(higherButton).width(higherButton.getWidth()).height(higherButton.getHeight()).pad(10,20,10,20);
+        if(higherOrLower.getDeckManager().getDeck().size() >= 51) {
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()*1.5f).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()*1.5f).pad(20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth()*1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight()*1.5f).pad(20, 20, 20, ((20*5) + (higherOrLower.getCurrentCard().getFaceImg().getWidth()*1.5f) + (higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()*1.5f)));
+        } else if (higherOrLower.getDeckManager().getDeck().size() == 50) {
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth()*1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight()*1.5f).pad(20);
+            cardTable.add(higherOrLower.getLastCard().getFaceImg()).width(higherOrLower.getLastCard().getFaceImg().getWidth()).height(higherOrLower.getLastCard().getFaceImg().getHeight()).pad(20, 20, 20, ((20*3) + (higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth())));
+        } else if (higherOrLower.getDeckManager().getDeck().size() == 49){
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth()*1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight()*1.5f).pad(20);
+            cardTable.add(higherOrLower.getLastCard().getFaceImg()).width(higherOrLower.getLastCard().getFaceImg().getWidth()).height(higherOrLower.getLastCard().getFaceImg().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBack()).width(higherOrLower.getDeckManager().getImgCardBack().getWidth()*1.5f).height(higherOrLower.getDeckManager().getImgCardBack().getHeight()*1.5f).pad(20);
+        } else if (higherOrLower.getDeckManager().getDeck().size() <= 48 && higherOrLower.getDeckManager().getDeck().size() >= 39) {
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth()*1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight()*1.5f).pad(20);
+            cardTable.add(higherOrLower.getLastCard().getFaceImg()).width(higherOrLower.getLastCard().getFaceImg().getWidth()).height(higherOrLower.getLastCard().getFaceImg().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBack()).width(higherOrLower.getDeckManager().getImgCardBack().getWidth()).height(higherOrLower.getDeckManager().getImgCardBack().getHeight()).pad(20, 20, 20, 20);
+        } else if (higherOrLower.getDeckManager().getDeck().size() == 38) {
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth()*1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight()*1.5f).pad(20);
+            cardTable.add(higherOrLower.getLastCard().getFaceImg()).width(higherOrLower.getLastCard().getFaceImg().getWidth()).height(higherOrLower.getLastCard().getFaceImg().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Low()).width(higherOrLower.getDeckManager().getImgCardBackStack_Low().getWidth()*1.5f).height(higherOrLower.getDeckManager().getImgCardBackStack_Low().getHeight()*1.5f).pad(20, 20, 20, 20);
+        } else if (higherOrLower.getDeckManager().getDeck().size() <= 37 && higherOrLower.getDeckManager().getDeck().size() >= 20) {
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth() * 1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight() * 1.5f).pad(20);
+            cardTable.add(higherOrLower.getLastCard().getFaceImg()).width(higherOrLower.getLastCard().getFaceImg().getWidth()).height(higherOrLower.getLastCard().getFaceImg().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Low()).width(higherOrLower.getDeckManager().getImgCardBackStack_Low().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Low().getHeight()).pad(20, 20, 20, 20);
+        } else if (higherOrLower.getDeckManager().getDeck().size() <= 19 && higherOrLower.getDeckManager().getDeck().size() >= 9) {
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Low()).width(higherOrLower.getDeckManager().getImgCardBackStack_Low().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Low().getHeight()).pad(20, 20, 20, 20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth() * 1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight() * 1.5f).pad(20);
+            cardTable.add(higherOrLower.getLastCard().getFaceImg()).width(higherOrLower.getLastCard().getFaceImg().getWidth()).height(higherOrLower.getLastCard().getFaceImg().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()).pad(20);
+        } else {
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBack()).width(higherOrLower.getDeckManager().getImgCardBack().getWidth()).height(higherOrLower.getDeckManager().getImgCardBack().getHeight()).pad(20, 20, 20, 20);
+            cardTable.add(higherOrLower.getCurrentCard().getFaceImg()).width(higherOrLower.getCurrentCard().getFaceImg().getWidth() * 1.5f).height(higherOrLower.getCurrentCard().getFaceImg().getHeight() * 1.5f).pad(20);
+            cardTable.add(higherOrLower.getLastCard().getFaceImg()).width(higherOrLower.getLastCard().getFaceImg().getWidth()).height(higherOrLower.getLastCard().getFaceImg().getHeight()).pad(20);
+            cardTable.add(higherOrLower.getDeckManager().getImgCardBackStack_Full()).width(higherOrLower.getDeckManager().getImgCardBackStack_Full().getWidth()).height(higherOrLower.getDeckManager().getImgCardBackStack_Full().getHeight()).pad(20);
+        }
+
+
+            buttonTable.add(higherButton).width(higherButton.getWidth()).height(higherButton.getHeight()).pad(10,20,10,20);
         buttonTable.add(equalButton).width(equalButton.getWidth()).height(equalButton.getHeight()).pad(10,20,10,20);
         buttonTable.add(lowerButton).width(lowerButton.getWidth()).height(lowerButton.getHeight()).pad(10,20,10,20);
 
+
+        getTableLayout().add(this.getLabel());
+        getTableLayout().row();
+        getTableLayout().add(cardTable);
+        getTableLayout().row();
         getTableLayout().add(buttonTable);
+
+
     }
 
 
@@ -217,9 +256,9 @@ public class PlayState extends State {
         Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        //System.out.println("gameSelection.getCurrentCard().getFaceImg().getWidth(): " + gameSelection.getCurrentCard().getFaceImg().getWidth());
+        //System.out.println("higherOrLower.getCurrentCard().getFaceImg().getWidth(): " + higherOrLower.getCurrentCard().getFaceImg().getWidth());
 
-        this.getLabel().setText("What will the next card be?\nCards left: " + (gameSelection.getDeckManager().getDeck().size()) +  "   Score: " + score);
+        this.getLabel().setText("What will the next card be?\nCards left: " + (higherOrLower.getDeckManager().getDeck().size()) +  "   Score: " + score);
         //buildTableLayout();
 
         this.getStage().act();
@@ -227,11 +266,11 @@ public class PlayState extends State {
   /*      this.getBasicGameSuite().getSpriteBatch().begin();
 
         this.getBasicGameSuite().getSpriteBatch().draw(
-                gameSelection.getCurrentCard().getFaceImg(),
-                (this.getBasicGameSuite().WIDTH/2) - ((gameSelection.getCurrentCard().getFaceImg().getRegionWidth()*1.5f)/2),  // 1.5f scales teh image
-                (this.getBasicGameSuite().HEIGHT/2) - ((gameSelection.getCurrentCard().getFaceImg().getRegionHeight()*1.5f)/2)+25, // 25 is to offset
-                gameSelection.getCurrentCard().getFaceImg().getRegionWidth()*1.5f,
-                gameSelection.getCurrentCard().getFaceImg().getRegionHeight()*1.5f);
+                higherOrLower.getCurrentCard().getFaceImg(),
+                (this.getBasicGameSuite().WIDTH/2) - ((higherOrLower.getCurrentCard().getFaceImg().getRegionWidth()*1.5f)/2),  // 1.5f scales teh image
+                (this.getBasicGameSuite().HEIGHT/2) - ((higherOrLower.getCurrentCard().getFaceImg().getRegionHeight()*1.5f)/2)+25, // 25 is to offset
+                higherOrLower.getCurrentCard().getFaceImg().getRegionWidth()*1.5f,
+                higherOrLower.getCurrentCard().getFaceImg().getRegionHeight()*1.5f);
         this.getBasicGameSuite().getSpriteBatch().end();
 */
     }
@@ -260,7 +299,7 @@ public class PlayState extends State {
     public void dispose() {
         super.dispose();
 
-        gameSelection.getDeckManager().dispose();
+        higherOrLower.getDeckManager().dispose();
         System.out.println("PlayState disposed");
     }
 

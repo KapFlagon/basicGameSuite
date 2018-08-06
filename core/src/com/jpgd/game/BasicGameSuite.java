@@ -3,6 +3,7 @@ package com.jpgd.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -37,6 +38,7 @@ public class BasicGameSuite extends Game {
 	private BitmapFont font;
 
 	private String playerName;
+	private Music music;
 
 	
 	@Override
@@ -54,8 +56,13 @@ public class BasicGameSuite extends Game {
 
 		playerName = "";
 
+		music = Gdx.audio.newMusic(Gdx.files.internal("sounds\\Jazz_01_Loop.ogg"));
+		music.setLooping(true);
+		music.setVolume(0.5f);
+		music.play();
 		// using setScreen();
 		this.setScreen(new HomeState(this));
+		//this.setScreen(new PlayState(this, new HigherOrLower()));
 		//this.setScreen(new NameInputState(this));
 
 	}
@@ -70,6 +77,7 @@ public class BasicGameSuite extends Game {
         try {
 			sb.dispose();
 			skin.dispose();
+			music.dispose();
 			System.out.println("BasicGameSuite disposed");
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

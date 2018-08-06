@@ -19,14 +19,6 @@ public class Card {
     private TextureRegion faceTexRegion, backTexRegion;
     private Image faceImg, backImg;
 
-    /*
-    Need variables for:
-        Face Image
-        Back Image?
-    Card dimensions:
-        L: 88.9 mm
-        W: 63.5 mm
-     */
 
     /*
     Constructors
@@ -88,8 +80,8 @@ public class Card {
     }
 
     /*
-        Setters
-         */
+    Setters
+     */
     public void setSuit(String passedSuit) {
         this.suit = passedSuit;
     }
