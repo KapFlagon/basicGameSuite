@@ -80,24 +80,21 @@ public class PlayState extends State {
 
         higherOrLower.dealCardsToPlayers();
 
-        // initialize the "higher" button and set position
-        higherButton = new TextButton("Higher?", this.getSkin());
-        higherButton.setSize((this.getBasicGameSuite().WIDTH/5),(this.getBasicGameSuite().HEIGHT/6));
-
-
-        //higherButton.setPosition((this.getBasicGameSuite().WIDTH/5)*1, (this.getBasicGameSuite().HEIGHT/6)*1);
-        higherButton.addListener(new InputListener() {
+        // initialize the "lower" button and set position
+        lowerButton = new TextButton("Lower/Equal?", this.getSkin());
+        lowerButton.setSize((this.getBasicGameSuite().WIDTH/5),(this.getBasicGameSuite().HEIGHT/6));
+        //lowerButton.setPosition((this.getBasicGameSuite().WIDTH/5)*3, (this.getBasicGameSuite().HEIGHT/6)*1);
+        lowerButton.addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Higher Button pushed");
+                System.out.println("Lower Button pushed");
                 if(higherOrLower.getDeckManager().getDeck().size() > 1) {
                     higherOrLower.dealCardsToPlayers();
-                    if (higherOrLower.compareCards("higher") == true) {
+                    if (higherOrLower.compareCards("lower") == true) {
                         score++;
                     }
                     buildTableLayout();
                 } else {
-                    dispose();
                     basicGameSuite.getScreen().dispose();
                     basicGameSuite.setScreen(new EndGameState(basicGameSuite, score));
                     //dispose();
@@ -108,8 +105,8 @@ public class PlayState extends State {
                 return true;
             }
         });
-        //this.getStage().addActor(higherButton);
 
+        /*
         // initialize the "equal" button and set position
         equalButton = new TextButton("Equal?", this.getSkin());
         equalButton.setSize((this.getBasicGameSuite().WIDTH/5),(this.getBasicGameSuite().HEIGHT/6));
@@ -136,22 +133,25 @@ public class PlayState extends State {
             }
         });
         //this.getStage().addActor(equalButton);
+        */
 
-        // initialize the "lower" button and set position
-        lowerButton = new TextButton("Lower?", this.getSkin());
-        lowerButton.setSize((this.getBasicGameSuite().WIDTH/5),(this.getBasicGameSuite().HEIGHT/6));
-        //lowerButton.setPosition((this.getBasicGameSuite().WIDTH/5)*3, (this.getBasicGameSuite().HEIGHT/6)*1);
-        lowerButton.addListener(new InputListener() {
+
+        // initialize the "higher" button and set position
+        higherButton = new TextButton("Higher?", this.getSkin());
+        higherButton.setSize((this.getBasicGameSuite().WIDTH/5),(this.getBasicGameSuite().HEIGHT/6));
+        //higherButton.setPosition((this.getBasicGameSuite().WIDTH/5)*1, (this.getBasicGameSuite().HEIGHT/6)*1);
+        higherButton.addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Lower Button pushed");
+                System.out.println("Higher Button pushed");
                 if(higherOrLower.getDeckManager().getDeck().size() > 1) {
                     higherOrLower.dealCardsToPlayers();
-                    if (higherOrLower.compareCards("lower") == true) {
+                    if (higherOrLower.compareCards("higher") == true) {
                         score++;
                     }
                     buildTableLayout();
                 } else {
+                    dispose();
                     basicGameSuite.getScreen().dispose();
                     basicGameSuite.setScreen(new EndGameState(basicGameSuite, score));
                     //dispose();
@@ -162,6 +162,7 @@ public class PlayState extends State {
                 return true;
             }
         });
+        //this.getStage().addActor(higherButton);
 
 
         getTableLayout().setFillParent(true);
@@ -226,10 +227,9 @@ public class PlayState extends State {
         }
 
 
-            buttonTable.add(higherButton).width(higherButton.getWidth()).height(higherButton.getHeight()).pad(10,20,10,20);
-        buttonTable.add(equalButton).width(equalButton.getWidth()).height(equalButton.getHeight()).pad(10,20,10,20);
         buttonTable.add(lowerButton).width(lowerButton.getWidth()).height(lowerButton.getHeight()).pad(10,20,10,20);
-
+        //buttonTable.add(equalButton).width(equalButton.getWidth()).height(equalButton.getHeight()).pad(10,20,10,20);
+        buttonTable.add(higherButton).width(higherButton.getWidth()).height(higherButton.getHeight()).pad(10,20,10,20);
 
         getTableLayout().add(this.getLabel());
         getTableLayout().row();

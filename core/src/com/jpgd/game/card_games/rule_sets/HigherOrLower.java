@@ -69,10 +69,7 @@ public class HigherOrLower extends CardGames {
         if (currentCard.getValue() > lastCard.getValue()) {
             checkValue = "higher";
         }
-        if (currentCard.getValue() == lastCard.getValue()) {
-            checkValue = "equal";
-        }
-        if (currentCard.getValue() < lastCard.getValue()) {
+        if (currentCard.getValue() <= lastCard.getValue()) {
             checkValue = "lower";
         }
 
