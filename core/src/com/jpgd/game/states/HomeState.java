@@ -9,14 +9,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
 import com.jpgd.game.BasicGameSuite;
 import com.jpgd.game.card_games.rule_sets.HigherOrLower;
+import com.jpgd.game.overlays.OverlayOptions;
 
 public class HomeState extends State {
 
     private Button playButton;
+    private OverlayOptions overlayOptions;
 
 
     public HomeState(BasicGameSuite basicGameSuite) {
         super(basicGameSuite);
+        overlayOptions = new OverlayOptions(basicGameSuite);
 
         this.getLabel().setText("Start playing Higher or Lower?");
         // setting the size of the label, not the text font
@@ -69,6 +72,7 @@ public class HomeState extends State {
 
         this.getStage().act();
         this.getStage().draw();
+        //this.overlayOptions.getStage().draw();
     }
 
     @Override

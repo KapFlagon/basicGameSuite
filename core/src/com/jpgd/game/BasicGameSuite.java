@@ -50,13 +50,14 @@ public class BasicGameSuite extends Game {
         orthoCam = new OrthographicCamera(this.WIDTH, this.HEIGHT);
         viewport = new FitViewport(this.WIDTH, this.HEIGHT, orthoCam);
         //screenViewport = new ScreenViewport(orthoCam);
-		skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+		//skin = new Skin(Gdx.files.internal("skin/default/uiskin.json"));
+		skin = new Skin(Gdx.files.internal("skin/shade/uiskin.json"));
 		font = new BitmapFont();
 
 
 		playerName = "";
 
-		music = Gdx.audio.newMusic(Gdx.files.internal("sounds\\Jazz_01_Loop.ogg"));
+		music = Gdx.audio.newMusic(Gdx.files.internal("sounds/Jazz_01_Loop.ogg"));
 		music.setLooping(true);
 		music.setVolume(0.5f);
 		music.play();
